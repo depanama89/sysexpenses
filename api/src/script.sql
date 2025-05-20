@@ -10,7 +10,25 @@ CREATE TABLE tblusers (
 	updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE tblroles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR UNIQUE
+);
 
+CREATE TABLE tblpermissions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR UNIQUE
+);
+CREATE TABLE tbluser_roles (
+    user_id INT REFERENCES tblusers(id),
+    role_id INT REFERENCES tblroles(id),
+    PRIMARY KEY (user_id, role_id)
+);
+CREATE TABLE tblrole_permissions (
+    role_id INT REFERENCES tblroles(id),
+    permission_id INT REFERENCES tblpermissions(id),
+    PRIMARY KEY (role_id, permission_id)
+);
 CREATE TABLE tblaccounts (
 	id SERIAL NOT NULL PRIMARY KEY,
 	user_id INTEGER REFERENCES tblusers(id) ON DELETE CASCADE,

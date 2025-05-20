@@ -1,8 +1,6 @@
-import express from "express"
+import "dotenv/config";
+import express from "express";
 
+const app = express();
 
-const app=express()
-
-
-
-export default app
+export default app;

@@ -1,5 +1,5 @@
 export interface signUp {
-  fisrtname: string;
+  firstname: string;
   lastname: string;
   email: string;
   contact: number;
@@ -7,11 +7,20 @@ export interface signUp {
   country: string;
 }
 
-export interface login {
+export interface loginProps {
   email: string;
   password: string;
 }
 
 export interface hashedPasswordProps {
   password: string;
+}
+
+export interface compareProps {
+  userPassword: string;
+  password: string;
+}
+
+export interface createJwtProps {
+  id: string;
 }

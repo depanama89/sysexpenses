@@ -3,6 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import createHttpError, { isHttpError } from "http-errors";
 import morgan from "morgan";
 import authRoute from "./routes/auths/auth";
+import userRoute from "./routes//users/userRoute";
+import authMiddleware from "./middlewares/authMiddleware";
 const app = express();
 
 app.use(morgan("dev"));
@@ -10,6 +12,7 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 app.use("/api-v2/auth", authRoute);
+app.use("/api-v2/users",authMiddleware, userRoute);
 app.use("/", (req, res, next) => {
   res.send("hello world");
 });

@@ -35,7 +35,7 @@ export const comparePassword = async ({
 
     return isMatch;
   } catch (error) {
-    throw new Error("les mot de passes ne correspond pas");
+    throw new Error("les mot de passes ou email  ne correspond pas");
   }
 };
 

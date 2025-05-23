@@ -29,7 +29,7 @@ export const login: RequestHandler<
     const user = result.rows[0];
 
     if (!user) {
-      throw createHttpError(401, "Invalid passwor ou email");
+      throw createHttpError(401, "l'utilisateur n'existe pas");
     }
 
     const isMatch = await comparePassword({
@@ -57,7 +57,8 @@ export const login: RequestHandler<
       token,
     });
   } catch (error) {
-    next(createHttpError(500, "Impossible de se connecter"));
+    console.log(error);
+    next(error);
   }
 };
 

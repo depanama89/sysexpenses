@@ -87,7 +87,7 @@ export const changePassword: RequestHandler<
 
   const updateUserQuery = await pool.query({
     text:`UPDATE tblusers SET password=$1 WHERE id=$2`,
-    values:[hashPassword,userId]
+    values:[hashedPassword,userId]
   })
 
 
@@ -100,4 +100,81 @@ export const changePassword: RequestHandler<
   } catch (error) {
     next(error);
     
-  }};
+  }
+};
+
+export const updateUser:RequestHandler=async(req,res,next)=>{
+    try {
+    if(!req.user?.userId){
+        throw (createHttpError(401,"authentification obligatoire"))
+    }
+    const {userId,role}=req.user
+    const {firstname,lastname,country,contact}=req.body
+
+    if(!firstname || !lastname || !country || !contact){
+        throw createHttpError(400,"Tous les champs sont obligatoires")  
+    }
+    const userQueryExist=await pool.query({
+        text:`SELECT * FROM tblusers WHERE id=$1`,
+        values:[userId]
+    })
+
+
+    const user =userQueryExist.rows[0]
+
+    if(!user){
+        throw createHttpError(404,"L'utilisateur n'existe pas")
+    }
+
+    const userUpdateQuery=await pool.query({
+        text:`UPDATE tblusers SET firstname=$1, lastname=$2,country=$3,contact=$4 ,updatedat=CURRENT_TIMESTAMP WHERE id=$5 RETURNING *`,
+        values:[firstname,lastname,country,contact,userId]
+    })
+
+    userUpdateQuery.rows[0].password=undefined
+
+    res.status(200).json({
+        status:"success", 
+        message:"Utilisateur modifié avec succès",
+        data:userUpdateQuery.rows[0]
+    })
+        
+    } catch (error) {
+        next(error)
+        
+    }
+}
+
+
+export const deleteUser:RequestHandler=async(req,res,next)=>{
+try {
+        if(!req.user?.userId){
+        throw (createHttpError(401,"authentification obligatoire"))
+    }
+    const {id}=req.params
+
+const userQueryExist=await pool.query({
+    text:`SELECT * FROM tblusers WHERE id=$1`,
+    values:[id]
+})
+const user = userQueryExist.rows[0]
+
+if(!user){
+    throw createHttpError(404,"Utilisateur non trouvé")
+}
+const deleteUserQuery=await pool.query({
+    text:`DELETE FROM tblusers WHERE id=$1`
+    ,values:[id]
+})
+
+res.status(200).json({
+    status:"success",
+    message:"Utilisateur supprimé avec succès"         
+
+})
+} catch (error) {
+    next(error)
+    
+}
+
+}

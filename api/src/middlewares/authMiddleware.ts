@@ -28,7 +28,7 @@ const authMiddleware:RequestHandler = (req, res, next) => {
        next()
         
     } catch (error) {
-        next(createHttpError(401,"Token invalide"))
+        next(createHttpError(401,"Veuillez vous connecter d'abord"))
         
     }
 }

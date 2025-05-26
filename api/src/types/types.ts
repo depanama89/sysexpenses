@@ -24,3 +24,14 @@ export interface compareProps {
 export interface createJwtProps {
   id: string;
 }
+
+// account type
+
+export interface accountProps{
+  user_id:number;
+  account_name:string
+  account_number:string;
+  account_balance:number;
+  type:string
+  
+}

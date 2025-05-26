@@ -101,4 +101,101 @@ export const signup: RequestHandler<unknown, unknown, signUp, unknown> = async (
     next(error);
   }
 };
+
+// ajouter new role
+interface RoleProps{
+  name:string
+}
+export const role: RequestHandler<unknown,unknown,RoleProps,unknown> = async (req, res, next) => {
+  const { name } = req.body;
+  try {
+    if (!name) {
+      throw createHttpError(400, "le role est obligatoire");
+    }
+
+    const roleExist = await pool.query({
+      text: `SELECT * FROM tblroles WHERE name=$1`,
+      values: [name],
+    });
+
+    if (roleExist.rows[0]) {
+      throw createHttpError(400, "le role existe deja");
+    }
+
+    const newRole = await pool.query({
+      text: `INSERT INTO tblroles (name) VALUES ($1) RETURNING *`,
+      values: [name],
+    });
+
+    res.status(201).json({
+      message: "le role a ete cree avec success",
+      newRole: newRole.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const permission: RequestHandler = async (req, res, next) => {
+  const { name } = req.body;
+  try {
+    if (!name) {
+      throw createHttpError(400, "le name est obligatoire");
+    }
+
+    const nameExist = await pool.query({
+      text: `SELECT * FROM tblpermissions WHERE name=$1`,
+      values: [name],
+    });
+
+    if (nameExist.rows[0]) {
+      throw createHttpError(400, "la permission existe deja");
+    }
+
+    const newname = await pool.query({
+      text: `INSERT INTO tblpermissions (name) VALUES ($1) RETURNING *`,
+      values: [name],
+    });
+
+    res.status(201).json({
+      message: "le name a ete cree avec success",
+      newname: newname.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const userRole: RequestHandler = async (req, res, next) => {
+  const { userId, roleId } = req.body;
+  try {
+    if (!userId || !roleId) {
+      throw createHttpError(400, "le userId et le roleId sont obligatoires");
+    }
+
+    const userRoleExist = await pool.query({
+      text: `SELECT * FROM tbluserroles WHERE user_id=$1 AND role_id=$2`,
+      values: [userId, roleId],
+    });
+
+    if (userRoleExist.rows[0]) {
+      throw createHttpError(400, "l'utilisateur a deja ce role");
+    }
+
+    const newUserRole = await pool.query({
+      text: `INSERT INTO tbluserroles (user_id,role_id) VALUES ($1,$2) RETURNING *`,
+      values: [userId, roleId],
+    });
+
+    res.status(201).json({
+      message: "le role a ete attribue avec success",
+      newUserRole: newUserRole.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 export const logout = () => {};

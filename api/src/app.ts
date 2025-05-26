@@ -4,6 +4,7 @@ import createHttpError, { isHttpError } from "http-errors";
 import morgan from "morgan";
 import authRoute from "./routes/auths/auth";
 import userRoute from "./routes//users/userRoute";
+import accountRoute from "./routes/accounts/accountRoute";
 import authMiddleware from "./middlewares/authMiddleware";
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api-v2/auth", authRoute);
 app.use("/api-v2/users",authMiddleware, userRoute);
+app.use("/api-v2/accounts",authMiddleware, accountRoute);
 app.use("/", (req, res, next) => {
   res.send("hello world");
 });

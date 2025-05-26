@@ -64,12 +64,10 @@ export const getAllAccounts: RequestHandler = async (req, res, next) => {
       text: `SELECT*FROM tblaccounts  ORDER BY createdat DESC`,
     });
     // Logic to get all accounts
-    res
-      .status(200)
-      .json({
-        message: "All accounts retrieved successfully",
-        data: acountQuery.rows,
-      });
+    res.status(200).json({
+      message: "All accounts retrieved successfully",
+      data: acountQuery.rows,
+    });
   } catch (error) {
     next(error);
   }
@@ -100,12 +98,10 @@ export const getAccountById: RequestHandler = async (req, res, next) => {
         `le compte avec l'ID ${userIdNumber} n'existe pas `
       );
     }
-    res
-      .status(200)
-      .json({
-        message: `Account with ID ${userIdNumber} retrieved successfully`,
-        data: queryAccount.rows,
-      });
+    res.status(200).json({
+      message: `Account with ID ${userIdNumber} retrieved successfully`,
+      data: queryAccount.rows,
+    });
   } catch (error) {
     next(error);
   }
@@ -113,23 +109,21 @@ export const getAccountById: RequestHandler = async (req, res, next) => {
 
 export const updateAccount: RequestHandler = async (req, res, next) => {
   const { userId } = req.user!;
- const {id}=req.params
-  
+  const { id } = req.params;
 
   try {
-
     if (!userId) {
       throw createHttpError(
         401,
         "vous devez être connecté pour accéder à cette ressource"
       );
     }
-    if(!isValidateId(id)){
+    if (!isValidateId(id)) {
       throw createHttpError(400, "l'ID doit être un nombre valide");
     }
-    
- const { account_name , account_balance, type } = req.body;
-   
+
+    const { account_name, account_balance, type } = req.body;
+
     // if (!account_name || !account_balance == undefined || !type) {
     //   throw createHttpError(400, "All fields are required");
     // }
@@ -139,10 +133,7 @@ export const updateAccount: RequestHandler = async (req, res, next) => {
     });
 
     if (!accountQueryExist.rows[0].exists) {
-      throw createHttpError(
-        404,
-        `le compte avec l'ID ${id} n'existe pas `
-      );
+      throw createHttpError(404, `le compte avec l'ID ${id} n'existe pas `);
     }
 
     const updatedAccount = await pool.query({
@@ -150,58 +141,82 @@ export const updateAccount: RequestHandler = async (req, res, next) => {
       values: [account_name, account_balance, type, id],
     });
     // Logic to update account by ID
-    res
-      .status(200)
-      .json({
-        message: `Account with ID ${id} updated successfully`,
-        data: updatedAccount.rows,
-      });
+    res.status(200).json({
+      message: `Account with ID ${id} updated successfully`,
+      data: updatedAccount.rows,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-
 // function to add money to an account by ID
 
-export const addMoneyToAccount:RequestHandler=async(req,res,next)=>{
-  const { userId}=req.user!
+export const addMoneyToAccount: RequestHandler = async (req, res, next) => {
+  try {
+    const { userId } = req.user!;
 
-// params parameter ID
-const {id}=req.params
-const {amount}=req.body
+  // params parameter ID
+  const { id } = req.params;
+  const { amount } = req.body;
 
-const NewMount=Number(amount)
+  const NewMount = Number(amount);
 
-const result= await pool.query({
-  text:`UPDATE tblaccounts SET account_balance=account_balance +$1, updatedat=CURRENT_TIMESTAMP WHERE id=$2 RETURNING *`,
-  values:[NewMount,id]
+  const result = await pool.query({
+    text: `UPDATE tblaccounts SET account_balance=(account_balance + $1), updatedat=CURRENT_TIMESTAMP WHERE id=$2 RETURNING *`,
+    values: [NewMount, id],
+  });
 
-})
-}
+  const accountInformation = result.rows[0];
+
+  const description =
+    accountInformation.account_name +
+    accountInformation.account_number +
+    "Ajout de fonds";
+    const DEFAULT_DEPOSIT_CATEGORY_ID = 1;
+
+    const addNewTransaction={
+      text:`INSERT INTO tbltransaction (user_id,description,status,category_id,account_id,amount,type_transaction) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      values:[userId,description,"Completed",DEFAULT_DEPOSIT_CATEGORY_ID,id,amount,"depot"]
+    }
+
+    await pool.query(addNewTransaction);
+
+    res.status(200).json({
+      status: "success",
+      message: "Operation completée avec success",
+      data: accountInformation,
+    });
+
+  } catch (error) {
+    next(error);
+    
+  }
+};
+
 
 // function to delete an account by ID
 
 export const deleteAccount: RequestHandler = async (req, res, next) => {
   try {
-    const { userId}=req.user!;
+    const { userId } = req.user!;
 
-    const {id} = req.params;
+    const { id } = req.params;
     // Logic to delete account by ID
 
-    const accountQueryExist=await pool.query({
-      text:`SELECT EXISTS (SELECT*FROM tblaccounts WHERE id=$1)`,
-      values:[id]
-    })
-    
-    if(!accountQueryExist.rows[0].exists){
-      throw createHttpError(404,`le compte avec l'iD ${id} n'existe pas`)
+    const accountQueryExist = await pool.query({
+      text: `SELECT EXISTS (SELECT*FROM tblaccounts WHERE id=$1)`,
+      values: [id],
+    });
+
+    if (!accountQueryExist.rows[0].exists) {
+      throw createHttpError(404, `le compte avec l'iD ${id} n'existe pas`);
     }
 
     await pool.query({
-      text:`DELETE FROM tblaccounts WHERE id=$1`,
-      values:[id]
-    })
+      text: `DELETE FROM tblaccounts WHERE id=$1`,
+      values: [id],
+    });
 
     res
       .status(200)

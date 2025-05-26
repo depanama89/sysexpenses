@@ -8,6 +8,7 @@ router.get("/",accountController.getAllAccounts)
 router.get("/:id", accountController.getAccountById)
 router.post("/create", accountController.createAccount)
 router.patch("/update/:id", accountController.updateAccount)
+router.patch("/add-money/:id",accountController.addMoneyToAccount)
 router.delete("/delete/:id", accountController.deleteAccount)
 
 
